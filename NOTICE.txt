@@ -1,0 +1,5 @@
+fileoccurencebeat
+Copyright 2019 Cloudronics Oy
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).
