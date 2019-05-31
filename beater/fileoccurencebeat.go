@@ -2,6 +2,8 @@ package beater
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/elastic/beats/libbeat/beat"
@@ -44,6 +46,7 @@ func (bt *Fileoccurencebeat) Run(b *beat.Beat) error {
 
 	ticker := time.NewTicker(bt.config.Period)
 	counter := 1
+	var existence bool
 	for {
 		select {
 		case <-bt.done:
@@ -51,11 +54,18 @@ func (bt *Fileoccurencebeat) Run(b *beat.Beat) error {
 		case <-ticker.C:
 		}
 
+		occurences := fileOccurences(bt.config.RootPath, bt.config.FileName)
+		if existence = false; occurences > 0 {
+			existence = true
+		}
+
 		event := beat.Event{
 			Timestamp: time.Now(),
 			Fields: common.MapStr{
-				"type":    b.Info.Name,
-				"counter": counter,
+				"type":       b.Info.Name,
+				"counter":    counter,
+				"occurences": occurences,
+				"exists":     existence,
 			},
 		}
 		bt.client.Publish(event)
@@ -68,4 +78,25 @@ func (bt *Fileoccurencebeat) Run(b *beat.Beat) error {
 func (bt *Fileoccurencebeat) Stop() {
 	bt.client.Close()
 	close(bt.done)
+}
+
+// Checks for a given file under a given path recurssively
+func fileOccurences(rootPath string, fileName string) int64 {
+	var count int64 = 0
+
+	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			logp.Error(err)
+			return err
+		}
+		if info.Name() == fileName {
+			count++
+		}
+		return nil
+	})
+	if err != nil {
+		logp.Error(err)
+		return 0
+	}
+	return count
 }

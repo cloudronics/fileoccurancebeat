@@ -6,9 +6,13 @@ package config
 import "time"
 
 type Config struct {
-	Period time.Duration `config:"period"`
+	Period   time.Duration `config:"period"`
+	RootPath string        `config:"rootpath"`
+	FileName string        `config:"filename"`
 }
 
 var DefaultConfig = Config{
-	Period: 1 * time.Second,
+	Period:   1 * time.Minute,
+	RootPath: "/bin",
+	FileName: "ls",
 }
