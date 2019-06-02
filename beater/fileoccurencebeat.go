@@ -37,6 +37,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 // Run starts fileoccurencebeat.
 func (bt *Fileoccurencebeat) Run(b *beat.Beat) error {
 	logp.Info("fileoccurencebeat is running! Hit CTRL-C to stop it.")
+	logp.Info("fileoccurencebeat is monitoring rootpath: " + bt.config.RootPath + " for filename: " + bt.config.FileName)
 
 	var err error
 	bt.client, err = b.Publisher.Connect()
@@ -96,7 +97,7 @@ func fileOccurences(rootPath string, fileName string) int64 {
 	})
 	if err != nil {
 		logp.Error(err)
-		return 0
+		// We might have a valid count still on error, log and ignore
 	}
 	return count
 }
